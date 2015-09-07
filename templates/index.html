@@ -1,9 +1,9 @@
 {%extends "base.html"%}
 {%import "bootstrap/wtf.html" as wtf%}
-{%block title%}Jack's Blog{%endblog%}
+{%block title%}Jack's Blog{%endblock%}
 {%block page_content%}
 <div class="page-header">
-    <h1>hello,{% if name %}{{name}}{%else%}bro{%end if %}!</h1>
+    <h1>hello,{% if name %}{{name}}{%else%}bro{%endif %}!</h1>
 </div>
 {{wtf.quick_form(form)}}
 {%endblock%}

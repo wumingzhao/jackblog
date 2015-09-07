@@ -5,17 +5,22 @@ from flask.ext.wtf import Form
 from wtforms import StringField,SubmitField
 from wtforms.validators import Required
 
-Class NameForm(Form):
+class NameForm(Form):
     name=StringField('what is your name',validators=[Required()])
-    submit=SubmitFiled('submit')
+    submit=SubmitField('submit')
 
 app=Flask(__name__)
 app.config['SECRET_KEY']='you never guess'
 manage=Manager(app)
 bootstrap=Bootstrap(app)
-@app.route('/')
+@app.route('/',methods=['GET','POST'])
 def index():
-    return render_template('index.html')
+    name=None
+    form=NameForm()
+    if form.validate_on_submit():
+        name=form.name.data
+        form.name.data=''
+    return render_template('index.html',form=form,name=name)
 @app.route('/user/<name>')
 def user(name):
     return render_template('user.html',name=name)
