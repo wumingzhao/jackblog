@@ -1,7 +1,9 @@
 from flask import Flask,render_template
 from flask.ext.script import Manager
+from flask.ext.bootstrap import Bootstrap
 app=Flask(__name__)
 manage=Manager(app)
+bootstrap=Bootstrap(app)
 @app.route('/')
 def index():
     return render_template('index.html')
