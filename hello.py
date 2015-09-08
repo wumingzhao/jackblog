@@ -6,9 +6,16 @@ from flask.ext.wtf import Form
 from wtforms import StringField,SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
-
+from flask.ext.migrate import Migrate,MigrateCommand
+from flask.ext.mail import Mail
 
 app=Flask(__name__)
+#config mail
+app.config['MAIL_server'] = 'smtp.126.com'
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME']=os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD']=os.environ.get('MAIL_PASSWORD')
 app.config['SECRET_KEY']='you never guess'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
 #this is the config of database
@@ -17,6 +24,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+os.path.join(basedir,'data.
 db=SQLAlchemy(app)
 manage=Manager(app)
 bootstrap=Bootstrap(app)
+migrate=Migrate(app,db)
+manage.add_command('db',MigrateCommand)
+mail=Mail(app)
 #this is a class to make a form
 class NameForm(Form):
    
