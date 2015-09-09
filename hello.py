@@ -8,16 +8,38 @@ from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate,MigrateCommand
 from flask.ext.mail import Mail
+from flask.ext.mail import Message
+from threading import Thread
 
 app=Flask(__name__)
 #config mail
-app.config['MAIL_server'] = 'smtp.126.com'
+app.config['MAIL_SERVER'] = 'smtp.126.com'
 app.config['MAIL_PORT'] = 25
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME']=os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD']=os.environ.get('MAIL_PASSWORD')
+app.config['FLASKY_ADMIN']=os.environ.get('FLASKY_ADMIN')
+
 app.config['SECRET_KEY']='you never guess'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN']=True
+
+#mail message
+app.config['FLASKY_MAIL_SUBJECT_PREFIX']='[Flasky]'
+app.config['FLASKY_MAIL_SENDER']='harmonica39@126.com'
+#send email
+def send_async_email(app,msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(to,subject,template,**kwargs):
+    msg=Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
+    msg.body=render_template(template+'.txt',**kwargs)
+    msg.html=render_template(template+'.html',**kwargs)
+    thr = Thread(target=send_async_email,args=[app,msg])
+    thr.start()
+    return thr
+
+
 #this is the config of database
 basedir=os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+os.path.join(basedir,'data.sqlite')
@@ -64,6 +86,8 @@ def index():
             user = User(username=form.name.data)
             db.session.add(user)
             session['know']=False
+            if app.config['FLASKY_ADMIN']:
+                send_email(app.config['FLASKY_ADMIN'],'New User','mail/new_user',user=user)
         else:
             session['know']=True
         session['name']=form.name.data
